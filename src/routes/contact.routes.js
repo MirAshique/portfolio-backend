@@ -1,8 +1,10 @@
 import express from "express";
+import Contact from "../models/contact.model.js";
+import sendEmail from "../utils/sendEmail.js";
 
 const router = express.Router();
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { name, email, message } = req.body;
 
@@ -13,21 +15,21 @@ router.post("/", (req, res) => {
       });
     }
 
-    console.log("📩 New Contact Message:", {
-      name,
-      email,
-      message
-    });
+    // Save to MongoDB
+    await Contact.create({ name, email, message });
 
-    res.status(200).json({
+    // Send email
+    await sendEmail({ name, email, message });
+
+    res.status(201).json({
       success: true,
-      message: "Message received successfully"
+      message: "Message sent successfully"
     });
   } catch (error) {
-    console.error("❌ Contact API Error:", error);
+    console.error("❌ Contact Error:", error);
     res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Failed to send message"
     });
   }
 });
