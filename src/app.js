@@ -4,6 +4,7 @@ import contactRoutes from "./routes/contact.routes.js";
 
 const app = express();
 
+// Middleware (ORDER MATTERS)
 app.use(cors());
 app.use(express.json());
 
