@@ -15,18 +15,22 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Save to MongoDB
+    // 1️⃣ Save message
     await Contact.create({ name, email, message });
 
-    // Send email
-    await sendEmail({ name, email, message });
-
+    // 2️⃣ Respond IMMEDIATELY
     res.status(201).json({
       success: true,
       message: "Message sent successfully"
     });
+
+    // 3️⃣ Send email AFTER response (safe)
+    setImmediate(() => {
+      sendEmail({ name, email, message });
+    });
+
   } catch (error) {
-    console.error("❌ Contact Error:", error);
+    console.error("❌ Contact API Error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to send message"
