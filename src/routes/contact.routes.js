@@ -15,25 +15,30 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // 1️⃣ Save message
-    await Contact.create({ name, email, message });
+    if (message.length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: "Message must be at least 10 characters"
+      });
+    }
 
-    // 2️⃣ Respond IMMEDIATELY
+    const contact = await Contact.create({ name, email, message });
+
     res.status(201).json({
       success: true,
-      message: "Message sent successfully"
+      message: "Message sent successfully",
+      data: { id: contact._id }
     });
 
-    // 3️⃣ Send email AFTER response (safe)
     setImmediate(() => {
       sendEmail({ name, email, message });
     });
 
   } catch (error) {
-    console.error("❌ Contact API Error:", error);
+    console.error("❌ Contact API Error:", error.message);
     res.status(500).json({
       success: false,
-      message: "Failed to send message"
+      message: "Something went wrong. Please try again later."
     });
   }
 });
