@@ -1,27 +1,29 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
 });
 
-// 🔎 ADD THIS
+// Verify connection
 transporter.verify((error, success) => {
   if (error) {
-    console.error("❌ Email transporter error:", error);
+    console.error("❌ Email server error:", error);
   } else {
-    console.log("✅ Email server is ready to send messages");
+    console.log("✅ Brevo SMTP ready");
   }
 });
 
 const sendEmail = async ({ name, email, message }) => {
   try {
     await transporter.sendMail({
-      from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
-      to: process.env.EMAIL_USER,
+      from: `"Portfolio Contact" <no-reply@yourdomain.com>`,
+      to: process.env.SMTP_USER,
       subject: "📩 New Portfolio Contact Message",
       html: `
         <h3>New Contact Message</h3>
@@ -33,7 +35,7 @@ const sendEmail = async ({ name, email, message }) => {
 
     console.log("📧 Email sent successfully");
   } catch (error) {
-    console.error("❌ Email failed:", error.message);
+    console.error("❌ Email send failed:", error.message);
   }
 };
 
