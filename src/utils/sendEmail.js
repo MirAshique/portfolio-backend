@@ -10,9 +10,9 @@ const sendEmail = async ({ name, email, message }) => {
       },
       body: JSON.stringify({
         sender: {
-          name: "Portfolio Contact",
-          email: "no-reply@portfolio.com"
-        },
+  name: "Portfolio Contact",
+  email: "yourgmail@gmail.com"
+},
         to: [
           {
             email: "yourgmail@gmail.com"
