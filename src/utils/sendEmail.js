@@ -14,10 +14,8 @@ const sendEmail = async ({ name, email, message }) => {
   email: "ashiqtalpur18@gmail.com"
 },
         to: [
-          {
-            email: "yourgmail@gmail.com"
-          }
-        ],
+  { email: "ashiqtalpur18@gmail.com" }
+],
         subject: "📩 New Portfolio Contact Message",
         htmlContent: `
           <h3>New Contact Message</h3>
