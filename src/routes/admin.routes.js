@@ -49,16 +49,54 @@ router.post("/login", async (req, res) => {
 });
 
 /**
- * 📬 Get All Messages (Protected)
+ * 📬 Get Messages (PAGINATED)
  */
 router.get("/messages", authMiddleware, async (req, res) => {
-  const messages = await Contact.find().sort({ createdAt: -1 });
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
 
-  // ✅ FIXED RESPONSE
-  res.json({
-    success: true,
-    messages, // 👈 THIS WAS THE BUG
+    const total = await Contact.countDocuments();
+    const messages = await Contact.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      success: true,
+      messages,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch messages",
+    });
+  }
+});
+
+/**
+ * ✅ Mark Message as Read
+ */
+router.patch("/messages/:id/read", authMiddleware, async (req, res) => {
+  await Contact.findByIdAndUpdate(req.params.id, {
+    isRead: true,
   });
+
+  res.json({ success: true });
+});
+
+/**
+ * 🗑 Delete Message
+ */
+router.delete("/messages/:id", authMiddleware, async (req, res) => {
+  await Contact.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
 });
 
 export default router;

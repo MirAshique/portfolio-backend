@@ -7,21 +7,25 @@ const contactSchema = new mongoose.Schema(
       required: true,
       trim: true,
       minlength: 2,
-      maxlength: 50
+      maxlength: 50,
     },
     email: {
       type: String,
       required: true,
       trim: true,
       lowercase: true,
-      match: [/^\S+@\S+\.\S+$/, "Please use a valid email address"]
+      match: [/^\S+@\S+\.\S+$/, "Please use a valid email address"],
     },
     message: {
       type: String,
       required: true,
       minlength: 10,
-      maxlength: 1000
-    }
+      maxlength: 1000,
+    },
+    isRead: {
+      type: Boolean,
+      default: false, // ✅ NEW
+    },
   },
   { timestamps: true }
 );
