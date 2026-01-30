@@ -7,93 +7,50 @@ import Contact from "../models/contact.model.js";
 
 const router = express.Router();
 
-/**
- * 🔐 Admin Login
- */
+/* 🔐 LOGIN */
 router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    const admin = await Admin.findOne({ email });
-    if (!admin) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
+  const admin = await Admin.findOne({ email });
+  if (!admin) return res.status(401).json({ message: "Invalid credentials" });
 
-    const isMatch = await bcrypt.compare(password, admin.password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
+  const match = await bcrypt.compare(password, admin.password);
+  if (!match) return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { id: admin._id, role: admin.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+  const token = jwt.sign(
+    { id: admin._id },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
 
-    res.json({
-      success: true,
-      token,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Login failed",
-    });
-  }
+  res.json({ success: true, token });
 });
 
-/**
- * 📬 Get Messages (PAGINATED)
- */
+/* 📬 GET MESSAGES (Pagination only) */
 router.get("/messages", authMiddleware, async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
-    const skip = (page - 1) * limit;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
 
-    const total = await Contact.countDocuments();
-    const messages = await Contact.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+  const total = await Contact.countDocuments();
 
-    res.json({
-      success: true,
-      messages,
-      pagination: {
-        total,
-        page,
-        pages: Math.ceil(total / limit),
-      },
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch messages",
-    });
-  }
-});
+  const messages = await Contact.find()
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 
-/**
- * ✅ Mark Message as Read
- */
-router.patch("/messages/:id/read", authMiddleware, async (req, res) => {
-  await Contact.findByIdAndUpdate(req.params.id, {
-    isRead: true,
+  res.json({
+    success: true,
+    messages,
+    pagination: {
+      page,
+      pages: Math.ceil(total / limit),
+      total,
+    },
   });
-
-  res.json({ success: true });
 });
 
-/**
- * 🗑 Delete Message
- */
+/* 🗑 DELETE */
 router.delete("/messages/:id", authMiddleware, async (req, res) => {
   await Contact.findByIdAndDelete(req.params.id);
   res.json({ success: true });
